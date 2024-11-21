@@ -1,0 +1,198 @@
+<html>
+    <head>
+        <title>Spin Wheel</title>
+        <style>
+            #myCanvas{
+                display: block;
+                border: 2px solid black;
+                margin: 50px auto;  /*auto se center me agya*/
+            }
+            #button{
+            display: block;
+            margin: 20px auto; /* Centers the button on the page */
+            padding: 10px 20px; /* Adds padding to the button */
+            font-size: 18px; /* Sets the font size of the button text */
+            cursor: pointer; /* Changes the cursor to a pointer when hovering over the button */
+            }
+            #rewardDisplay{
+                font-size: 30px;
+                margin: 20px auto;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        
+        <canvas id="myCanvas" height="300" width="300"></canvas>      <!--creating canvas-->
+        <button id="button">Spin the Wheel</button>
+        <br>
+        <br>
+        <p id="rewardDisplay"></p>
+
+        <script>
+            var c = document.getElementById('myCanvas');  //getting id of canvas
+            var ctx = c.getContext("2d");                 //get the 2d drawing canvas for context
+
+            var wheelColors = ["red", "blue", "green", "yellow", "pink", "violet", "orange", "purple"]; //colors in wheel
+            var wheeltext = ["jeans", "t-shirt", "watch", "Smart phone", "gown", "50% off", "free", "Dubai trip"];
+            var noofSection = wheelColors.length;                       //jitne color utne section
+            var anglePerSection = 2*Math.PI / noofSection;             
+
+            var startAngle = 0; // Initial starting angle of the wheel
+            var spinAngle = 0; // Angle by which the wheel is currently rotated
+            var spinSpeed = 0; // Speed of the spin
+
+            //function to draw a wheel
+            function drawWheel(){
+                ctx.clearRect(0, 0, c.width, c.height); //clear any previous context
+
+                for(var i = 0; i<noofSection; i++){
+
+                    ctx.beginPath();
+                    ctx.moveTo(c.width/2 , c.height/2);// Move to the center of the canvas
+                    // Draw an arc for each section
+                
+                    //ctx.arc(x, y, radius, startAngle, endAngle);
+                    //drawing arcs
+                    ctx.arc(c.width / 2 , c.height / 2, 140, startAngle + i*anglePerSection,  startAngle + (i+1)*anglePerSection); //jha dusre ka shuru vha pehle ka khtm
+                    // Set the fill color for the section
+                    ctx.fillStyle = wheelColors[i];
+                    ctx.fill(); // Fill the section with the selected color
+                    ctx.stroke(); // Outline the section with the current stroke style
+
+                    var textAngle = (startAngle + i*anglePerSection) + anglePerSection/2;
+                    var textX = c.width/2 + 100*Math.cos(textAngle);
+                    var textY = c.height/2 + 100*Math.sin(textAngle);
+
+                    ctx.fillText(wheeltext[i], textX, textY);
+
+                    // Set the font style and fill color before drawing the text
+                    ctx.font = "bold 15px Arial";
+                    ctx.fillStyle = "white";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle"; // By setting ctx.textBaseline = "middle";, you're ensuring that the text is centered vertically around this calculated point. This makes the text appear centered within the wheel section, both horizontally (using ctx.textAlign = "center") and vertically.
+                    ctx.fillText(wheeltext[i], textX, textY);
+
+                }
+            }
+
+            // Function to update the wheel's position and redraw it
+            function updateWheel(){
+
+                startAngle += spinSpeed; // Update the starting angle by the current spin speed
+                spinSpeed *= 0.98; // Gradually slow down the spin
+
+                if(spinSpeed <= 0.002){
+                    spinSpeed = 0;
+                }
+
+                drawWheel();      // Redraw the wheel with the updated angle
+
+                if (spinSpeed !== 0) {
+                requestAnimationFrame(updateWheel);
+                var currentAngle = spinSpeed;
+                 }
+                  // Continue updating the wheel if it's still spinning
+                if(spinSpeed == 0){
+                    var reward = document.getElementById('rewardDisplay');
+                    var finalAngle = startAngle % (2*Math.PI);
+                    var winningIndex = Math.floor(finalAngle);   //math.floor round off the decimal number
+                    reward.innerHTML = "YOU WON " + wheeltext[winningIndex];
+                
+            
+                }
+            }
+
+            // Event listener for the spin button
+            document.getElementById('button').addEventListener('click',function(){
+                spinSpeed = Math.random() * 0.2+0.1; // Set a random spin speed when the button is clicked
+                updateWheel();
+                var reward = document.getElementById('rewardDisplay');
+                reward.innerHTML = ' ';
+
+            })
+            // Initial drawing of the wheel
+
+
+            drawWheel(); //draw wheel initially
+        </script>
+    </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ////////////////////////////////Clearing the Canvas (ctx.clearRect(...)):
+
+
+Purpose: Before drawing the wheel, the entire canvas is cleared. This is important when animating the wheel, as it ensures that any previous drawings are removed, preventing the display from becoming cluttered or showing a "trail" of the spinning wheel.
+Usage: ctx.clearRect(0, 0, can.width, can.height); clears the rectangular area from (0, 0) (top-left corner) to (can.width, can.height) (bottom-right corner), which means the entire canvas.
+
+
+
+///////////////////////////////////////////////Starting the Loop:
+
+Purpose: The wheel is divided into multiple sections, each represented by an arc. A for loop is used to iterate over the number of sections (numSections).
+i < numSections: The loop runs from i = 0 to i < numSections, ensuring that each section of the wheel is drawn.
+
+
+
+
+//////////////////////////////////////////Beginning a New Path (ctx.beginPath()):
+
+
+
+Purpose: For each section, a new path is started with ctx.beginPath(). This ensures that each section is drawn independently and can be filled with different colors.
+
+
+/////////////////////////////////Moving to the Center (ctx.moveTo(...)):
+
+Purpose: The starting point of the arc is set at the center of the canvas. This is necessary because each section (arc) needs to radiate out from the center to form the wheel.
+Usage: ctx.moveTo(can.width / 2, can.height / 2); moves the drawing cursor to the center of the canvas.
+
+
+///////////////////////////////Drawing the Arc (ctx.arc(...)):
+
+
+
+Purpose: The actual shape of each section is created using the arc method. This method draws a segment of a circle (an arc) based on the specified radius and angle.
+Parameters:
+Center of Arc (can.width / 2, can.height / 2): These parameters set the center of the circle (and thus the wheel) at the middle of the canvas.
+Radius (140): This sets the size of the wheel. The arc will extend 140 pixels from the center.
+Start Angle (startAngle + i * anglePerSection): This determines where the arc starts, based on the current section's index i. The start angle is offset by startAngle, which is updated when the wheel spins.
+End Angle (startAngle + (i + 1) * anglePerSection): This sets where the arc ends, forming the complete segment for this section
+
+.
+////////////////////////////////////Setting the Fill Color (ctx.fillStyle = wheelColors[i]):
+
+
+
+Purpose: The fillStyle property sets the color that will be used to fill the section. The color is chosen from the wheelColors array, corresponding to the current section's index i.
+Usage: ctx.fillStyle = wheelColors[i]; selects the color for the current section.
+Filling the Section (ctx.fill()):
+
+Purpose: The fill() method fills the current path (the section) with the selected color. This visually creates the colored section on the wheel.
+Usage: ctx.fill(); applies the fill color to the section.
+
+
+////////////////////////////////////Drawing the Section Border (ctx.stroke()):
+
+
+
+Purpose: After filling the section, ctx.stroke() draws the border around it. This helps visually separate the sections of the wheel.
+Usage: ctx.stroke(); outlines the section with the current stroke style (which is the default black unless otherwise specified).-->
